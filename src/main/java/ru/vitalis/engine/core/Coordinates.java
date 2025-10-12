@@ -3,7 +3,7 @@ package ru.vitalis.engine.core;
 import java.util.Arrays;
 
 public class Coordinates implements Cloneable{
-    private double[] array;
+    protected double[] array;
     public final static int X = 0, Y = 1, Z = 2, W = 3, V = 4;
 
     public Coordinates(int dimensions){
@@ -11,9 +11,10 @@ public class Coordinates implements Cloneable{
         fill(0);
     }
 
-    public void set(int axis, double value){
+    public Coordinates set(int axis, double value){
         if(!correct(axis)) throw new IndexOutOfBoundsException();
         array[axis] = value;
+        return this;
     }
 
     public double get(int axis){
@@ -21,62 +22,72 @@ public class Coordinates implements Cloneable{
         return array[axis];
     }
 
-    public void addEl(int axis, double value){
+    public Coordinates addEl(int axis, double value){
         if(!correct(axis)) throw new IndexOutOfBoundsException();
         array[axis] += value;
+        return this;
     }
 
-    public void multiplyEl(int axis, double value){
+    public Coordinates multiplyEl(int axis, double value){
         if(!correct(axis)) throw new IndexOutOfBoundsException();
         array[axis] *= value;
+        return this;
     }
 
-    public void powEl(int axis, double value){
+    public Coordinates powEl(int axis, double value){
         if(!correct(axis)) throw new IndexOutOfBoundsException();
         array[axis] = Math.pow(array[axis], value);
+        return this;
     }
 
-    public void addAll(double term){
+    public Coordinates addAll(double term){
         for(int i = 0; i < array.length; i++){
             addEl(i, term);
         }
+        return this;
     }
 
-    public void multiplyAll(double multiplier){
+    public Coordinates multiplyAll(double multiplier){
         for(int i = 0; i < array.length; i++){
             multiplyEl(i, multiplier);
         }
+        return this;
     }
 
-    public void powAll(double value){
+    public Coordinates powAll(double value){
         for(int i = 0; i < array.length; i++){
             powEl(i, value);
         }
+        return this;
     }
 
-    public void addDepth(double ... terms){
+    public Coordinates addDepth(double ... terms){
         int elems = Math.min(terms.length, array.length);
         for(int i = 0; i < elems; i++){
             addEl(i, terms[i]);
         }
+        return this;
     }
 
-    public void multiplyDepth(double ... multipliers){
+    public Coordinates multiplyDepth(double ... multipliers){
         int elems = Math.min(multipliers.length, array.length);
         for(int i = 0; i < elems; i++){
             multiplyEl(i, multipliers[i]);
         }
+        return this;
     }
 
-    public void powDepth(double ... pows){
+    public Coordinates powDepth(double ... pows){
         int elems = Math.min(pows.length, array.length);
         for(int i = 0; i < elems; i++){
             powEl(i, pows[i]);
         }
+        return this;
     }
 
-    public void fill(double i){
+    public Coordinates fill(double i){
         Arrays.fill(array, i);
+        return this;
     }
 
     @Override
@@ -109,7 +120,7 @@ public class Coordinates implements Cloneable{
         return true;
     }
 
-    private boolean correct(int axis) {
+    protected boolean correct(int axis) {
         return axis >= 0 && axis < array.length;
     }
 }

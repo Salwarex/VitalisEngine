@@ -4,7 +4,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 import ru.vitalis.engine.client.render.Renderer;
-import ru.vitalis.engine.client.render.Renderer2D;
+import ru.vitalis.engine.client.render.r2d.Renderer2D;
 
 import java.nio.IntBuffer;
 
@@ -45,7 +45,7 @@ public class Frame {
         if (window == NULL)
             throw new RuntimeException("Can't create window");
 
-        //Обработчик нажатий клавишь и взаимодействие для взимодействия окном
+        //Обработчик нажатий клавиш и взаимодействие для взимодействия окном
 //        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
 //            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
 //                glfwSetWindowShouldClose(window, true);

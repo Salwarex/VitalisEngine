@@ -1,6 +1,7 @@
 package ru.vitalis.engine.client;
 
 import org.lwjgl.opengl.GL;
+import ru.vitalis.engine.client.render.Renderer;
 
 import java.util.concurrent.Callable;
 
@@ -44,7 +45,8 @@ public class GameThread implements Callable<Integer> {
         //Возможность рисования
         GL.createCapabilities();
 
-        frame.getRenderer().setProjection();
+        Renderer renderer = frame.getRenderer();
+        renderer.setProjection();
 
         //Установка цвета фона
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);

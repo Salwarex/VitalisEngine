@@ -1,6 +1,8 @@
 package ru.vitalis.engine.client;
 
 
+import org.lwjgl.stb.STBImage;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -11,6 +13,7 @@ public class ClientInstance {
     private static GameThread thread;
 
     public static void main(String[] args) {
+        defaultOpenGLSettings();
         thread = new GameThread();
 
         Future<Integer> exitCode = pool.submit(thread);
@@ -22,6 +25,12 @@ public class ClientInstance {
         } finally {
             pool.shutdown();
         }
+    }
+
+    private static void defaultOpenGLSettings(){
+        //подзагрузка текстур из памяти в STB
+        //true - из-за особенностей памяти изображения хранятся вверх-ногами, а OpenGL ожидает наоборот. Переворачиваем.
+        STBImage.stbi_set_flip_vertically_on_load(true);
     }
 
     public static GameThread getThread() {
