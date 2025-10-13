@@ -26,7 +26,7 @@ public class GameThread implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        frame = new Frame(1920, 1080, false);
+        frame = new Frame(1600, 900, false);
 
         if(frame.getWindow() == 0L) exitCode = 2;
 

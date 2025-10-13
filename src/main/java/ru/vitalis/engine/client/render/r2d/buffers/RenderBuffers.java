@@ -1,6 +1,6 @@
 package ru.vitalis.engine.client.render.r2d.buffers;
 
-import ru.vitalis.engine.client.render.TileCoordinates;
+import ru.vitalis.engine.client.render.ClientCords;
 import ru.vitalis.engine.core.Coordinates;
 
 import static org.lwjgl.opengl.GL15.*;
@@ -14,14 +14,6 @@ import static ru.vitalis.engine.core.Coordinates.*;
 
 public class RenderBuffers {
     public static RenderBuffer createBuffers(Coordinates coordinates, double[] size){
-        double scaler = TileCoordinates.getScaler();
-
-        float[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 0f,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 0f,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 1f,
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 1f
-        };
         int[] indices = { //массив, определяющий, в каком порядке создаются треугольники
                 0, 1, 2,
                 2, 3, 0
@@ -30,9 +22,7 @@ public class RenderBuffers {
         int vao = glGenVertexArrays(); //объект, хранящий информацию об используемых атрибутах, связи с VBO. Шаблон для отрисовки.
         glBindVertexArray(vao);
 
-        int vbo = glGenBuffers(); //буфер в видеопамяти GPU, где хранятся данные вершин. Получение id буфера.
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);  //делаем текущим
-        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW); //копируем vertices в gpu
+        int vbo = vbo(null, coordinates, size);
 
         int ebo = glGenBuffers(); //буфер, хранящий индексы вершин. Создание и получение его id/
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); //задание буфера.
@@ -57,20 +47,36 @@ public class RenderBuffers {
         return new RenderBuffer(vao, vbo, ebo);
     }
 
-    public static void updateBuffers(RenderBuffer buffer, Coordinates coordinates, double[] size) {
-        if(size.length != 2) throw new IllegalArgumentException("size должен содержать ровно 2 координаты!");
-        double scaler = TileCoordinates.getScaler();
+    private static int vbo(RenderBuffer buffer, Coordinates coordinates, double[] size){
+        double scaler = ClientCords.getScaler();
+        Coordinates normCords = ClientCords.getScreenView(coordinates);
+        double x = normCords.get(X);
+        double y = normCords.get(Y);
 
         float[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 0f,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 0f,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 1f,
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 1f
+                (float) (-scaler * size[0] + x), (float) (-scaler * size[1] + y), 0f, 0f,
+                (float) (scaler * size[0] + x), (float) (-scaler * size[1] + y), 1f, 0f,
+                (float) (scaler * size[0] + x),  (float) (scaler * size[1] + y), 1f, 1f,
+                (float) (-scaler * size[0] + x),  (float) (scaler * size[1] + y), 0f, 1f
         };
 
-        // Обновляем данные в существующем VBO
-        glBindBuffer(GL_ARRAY_BUFFER, buffer.getVbo());
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        int vbo = 0;
+        if(buffer == null){
+            vbo = glGenBuffers(); //буфер в видеопамяти GPU, где хранятся данные вершин. Получение id буфера.
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);  //делаем текущим
+            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW); //копируем vertices в gpu
+        }
+        else{
+            glBindBuffer(GL_ARRAY_BUFFER, buffer.getVbo());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
+        return vbo;
+    }
+
+    public static void updateBuffers(RenderBuffer buffer, Coordinates coordinates, double[] size) {
+        if(size.length != 2) throw new IllegalArgumentException("size должен содержать ровно 2 координаты!");
+        vbo(buffer, coordinates, size);
     }
 }

@@ -1,7 +1,7 @@
 package ru.vitalis.engine.client.objects;
 
 import org.jetbrains.annotations.NotNull;
-import ru.vitalis.engine.client.render.TileCoordinates;
+import ru.vitalis.engine.client.render.ClientCords;
 import ru.vitalis.engine.client.render.r2d.buffers.RenderBuffer;
 import ru.vitalis.engine.client.render.r2d.buffers.RenderBuffers;
 import ru.vitalis.engine.client.render.r2d.Renderable;
@@ -56,8 +56,8 @@ public class ScreenObject implements Renderable, Comparable<ScreenObject> {
         Coordinates[] result = new Coordinates[4];
         for(int i = 0; i < 4 ; i++){
             result[i] = new Coordinates(2)
-                    .set(X, (i % 3 == 0 ? -1 : 1) * TileCoordinates.getScaler() * size[0] + centreScreenPos.get(X))
-                    .set(Y, (i <= 1 ? -1 : 1) * TileCoordinates.getScaler() * size[1] + centreScreenPos.get(Y));
+                    .set(X, (i % 3 == 0 ? -1 : 1) * ClientCords.getScaler() * size[0] + centreScreenPos.get(X))
+                    .set(Y, (i <= 1 ? -1 : 1) * ClientCords.getScaler() * size[1] + centreScreenPos.get(Y));
         }
         return result;
     }
@@ -92,9 +92,12 @@ public class ScreenObject implements Renderable, Comparable<ScreenObject> {
     @Override
     public void update(){
 //        a += 0.01;
-//        double x = Math.cos(a);
-//        double y = Math.sin(a);
 //
+//        Coordinates norm = ClientCords.getScreenView(centreScreenPos);
+//
+//        double x = norm.get(X) + 0.1 * Math.cos(a);
+//        double y = norm.get(Y) + 0.1 * Math.sin(a);
+
 //        centreScreenPos.set(X, x).set(Y, y);
         RenderBuffers.updateBuffers(renderBuffers, centreScreenPos, size);
     }

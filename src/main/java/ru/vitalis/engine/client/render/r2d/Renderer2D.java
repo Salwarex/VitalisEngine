@@ -5,7 +5,6 @@ import org.lwjgl.BufferUtils;
 import ru.vitalis.engine.client.Frame;
 import ru.vitalis.engine.client.objects.ScreenObject;
 import ru.vitalis.engine.client.render.Renderer;
-import ru.vitalis.engine.client.render.TileCoordinates;
 import ru.vitalis.engine.client.render.r2d.texture.Shaders;
 import ru.vitalis.engine.core.Coordinates;
 
@@ -71,20 +70,17 @@ public class Renderer2D implements Renderer {
     @Override
     public void draw(){
         if(renderables.isEmpty()){
-            Coordinates cord = new Coordinates(2);
-            ScreenObject object = new ScreenObject(null,
-                    cord.set(Coordinates.X, 0).set(Coordinates.Y, 0),
-                    RenderableType.PROPS, new double[]{1.0, 1.0}, (0 % 2 == 0 ? "textures/test.png" : "textures/testx2.png"));
-            renderables.add(object);
-//            for(int i = -6; i <= 6; i++){
-//                for(int j = -6; j <= 6; j++){
-//                    Coordinates cord = new Coordinates(2);
-//                    ScreenObject object = new ScreenObject(null,
-//                            cord.set(Coordinates.X, i).set(Coordinates.Y, j),
-//                            RenderableType.PROPS, new double[]{1.0, 1.0}, (i % 2 == 0 ? "textures/test.png" : "textures/testx2.png"));
-//                    renderables.add(object);
-//                }
-//            }
+            for(int i = -6; i <= 6; i++){
+                for(int j = -6; j <= 6; j++){
+                    Coordinates cord = new Coordinates(2);
+                    ScreenObject object = new ScreenObject(null,
+                            cord.set(Coordinates.X, i).set(Coordinates.Y, j),
+                            RenderableType.PROPS, new double[]{1.0, 1.0}, (i % 2 == 0 ?
+                            "textures/entity/player/jacob/idle/down1.png"
+                            : "textures/entity/player/jacob/idle/down2.png"));
+                    renderables.add(object);
+                }
+            }
         }
 
         for(Renderable current : renderables){
