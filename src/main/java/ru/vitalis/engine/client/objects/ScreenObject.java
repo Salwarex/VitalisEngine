@@ -92,8 +92,8 @@ public class ScreenObject implements Renderable, Comparable<ScreenObject> {
     @Override
     public void update(){
 //        a += 0.01;
-//        double x = 0.5 * Math.cos(a);
-//        double y = 0.5 * Math.sin(a);
+//        double x = Math.cos(a);
+//        double y = Math.sin(a);
 //
 //        centreScreenPos.set(X, x).set(Y, y);
         RenderBuffers.updateBuffers(renderBuffers, centreScreenPos, size);

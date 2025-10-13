@@ -3,7 +3,6 @@ package ru.vitalis.engine.client.render.r2d.buffers;
 import ru.vitalis.engine.client.render.TileCoordinates;
 import ru.vitalis.engine.core.Coordinates;
 
-import static org.lwjgl.opengl.GL11.GL_DOUBLE;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
@@ -17,11 +16,11 @@ public class RenderBuffers {
     public static RenderBuffer createBuffers(Coordinates coordinates, double[] size){
         double scaler = TileCoordinates.getScaler();
 
-        double[] verticles = { // %4 = 0, 1 - позиция на экране, 2, 3 - UV-координаты (координаты текстуры)
-                -scaler * size[0] + coordinates.get(X)*scaler, -scaler * size[1] + coordinates.get(Y)*scaler*2, 0, 0,
-                scaler * size[0] + coordinates.get(X)*scaler, -scaler * size[1] + coordinates.get(Y)*scaler*2, 1, 0,
-                scaler * size[0] + coordinates.get(X)*scaler,  scaler * size[1] + coordinates.get(Y)*scaler*2, 1, 1,
-                -scaler * size[0] + coordinates.get(X)*scaler,  scaler * size[1] + coordinates.get(Y)*scaler*2, 0, 1
+        float[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 0,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 0,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 1,
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 1
         };
         int[] indices = { //массив, определяющий, в каком порядке создаются треугольники
                 0, 1, 2,
@@ -33,7 +32,7 @@ public class RenderBuffers {
 
         int vbo = glGenBuffers(); //буфер в видеопамяти GPU, где хранятся данные вершин. Получение id буфера.
         glBindBuffer(GL_ARRAY_BUFFER, vbo);  //делаем текущим
-        glBufferData(GL_ARRAY_BUFFER, verticles, GL_STATIC_DRAW); //копируем verticles в gpu
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW); //копируем vertices в gpu
 
         int ebo = glGenBuffers(); //буфер, хранящий индексы вершин. Создание и получение его id/
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); //задание буфера.
@@ -42,14 +41,14 @@ public class RenderBuffers {
         //Настройка атрибутов вершин
         glVertexAttribPointer(0, //номер атрибута в шейдере
                 2, //количество компонент (x, y, z)
-                GL_DOUBLE, //тип данных
+                GL_FLOAT, //тип данных
                 false, //не нормализовать (приведение к [0, 1])
-                4 * Double.BYTES, //шаг между началами соседних вершин
+                4 * Float.BYTES, //шаг между началами соседних вершин
                 0); //смещение внутри вершины
         glEnableVertexAttribArray(0); //включение использования атрибута
 
         //Настройка атрибутов UV
-        glVertexAttribPointer(1, 2, GL_DOUBLE, false, 4 * Double.BYTES, 2 * Double.BYTES);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
         glEnableVertexAttribArray(1);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -62,11 +61,11 @@ public class RenderBuffers {
         if(size.length != 2) throw new IllegalArgumentException("size должен содержать ровно 2 координаты!");
         double scaler = TileCoordinates.getScaler();
 
-        double[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
-                -scaler * size[0] + coordinates.get(X)*scaler*2, -scaler * size[1] + coordinates.get(Y)*scaler*2, 0, 0,
-                scaler * size[0] + coordinates.get(X)*scaler*2, -scaler * size[1] + coordinates.get(Y)*scaler*2, 1, 0,
-                scaler * size[0] + coordinates.get(X)*scaler*2,  scaler * size[1] + coordinates.get(Y)*scaler*2, 1, 1,
-                -scaler * size[0] + coordinates.get(X)*scaler*2,  scaler * size[1] + coordinates.get(Y)*scaler*2, 0, 1
+        float[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 0,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 0,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 1,
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 1
         };
 
         // Обновляем данные в существующем VBO

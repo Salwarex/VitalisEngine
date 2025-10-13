@@ -1,13 +1,13 @@
-#version 330 compatibility // ← ключевое: compatibility
+#version 330 core
 
 in vec2 aPos;
 in vec2 aTexCoord;
 
 out vec2 TexCoord;
 
+uniform mat4 u_Projection;
+
 void main() {
     TexCoord = aTexCoord;
-
-    // Автоматически использует GL_PROJECTION и GL_MODELVIEW
-    gl_Position = gl_ModelViewProjectionMatrix * vec4(aPos, 0.0, 1.0);
+    gl_Position = u_Projection * vec4(aPos, 0.0, 1.0);
 }

@@ -1,5 +1,7 @@
 package ru.vitalis.engine.client.render.r2d;
 
+import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
 import ru.vitalis.engine.client.Frame;
 import ru.vitalis.engine.client.objects.ScreenObject;
 import ru.vitalis.engine.client.render.Renderer;
@@ -7,6 +9,7 @@ import ru.vitalis.engine.client.render.TileCoordinates;
 import ru.vitalis.engine.client.render.r2d.texture.Shaders;
 import ru.vitalis.engine.core.Coordinates;
 
+import java.nio.FloatBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +20,9 @@ public class Renderer2D implements Renderer {
 
     private final Frame frame;
     private final Set<Renderable> renderables = new HashSet<>();
+
+    private final Matrix4f projectionMatrix = new Matrix4f();
+    private final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
     public Renderer2D(Frame frame){
         instance = this;
@@ -36,38 +42,49 @@ public class Renderer2D implements Renderer {
     }
 
     public void setProjection() {
-        glEnable(GL_DEPTH_TEST);
-
         int width = frame.getWidth();
         int height = frame.getHeight();
 
         glViewport(0, 0, width, height);
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
+        float aspect = (float) width / height;
+        float halfSize = 1.0f;
 
-        double aspect = (double) width / height;
-        double halfSize = 1.0;
+        // Сбрасываем буфер матрицы
+        matrixBuffer.clear();
 
-        if (aspect >= 1.0f) {
-            glOrtho(-halfSize * aspect, halfSize * aspect, -halfSize, halfSize, -1.0, 1.0);
+        if (aspect >= 1.0) {
+            projectionMatrix.setOrtho(
+                    -halfSize * aspect, halfSize * aspect,
+                    -halfSize, halfSize,
+                    -1.0f, 1.0f
+            );
         } else {
-            glOrtho(-halfSize, halfSize, -halfSize / aspect, halfSize / aspect, -1.0, 1.0);
+            projectionMatrix.setOrtho(
+                    -halfSize, halfSize,
+                    -halfSize / aspect, halfSize / aspect,
+                    -1.0f, 1.0f
+            );
         }
     }
 
     @Override
     public void draw(){
         if(renderables.isEmpty()){
-            for(int i = -6; i <= 6; i++){
-                for(int j = -6; j <= 6; j++){
-                    Coordinates cord = new Coordinates(2);
-                    ScreenObject object = new ScreenObject(null,
-                            cord.set(Coordinates.X, i).set(Coordinates.Y, j),
-                            RenderableType.PROPS, new double[]{1.0, 1.0}, (i % 2 == 0 ? "textures/test.png" : "textures/testx2.png"));
-                    renderables.add(object);
-                }
-            }
+            Coordinates cord = new Coordinates(2);
+            ScreenObject object = new ScreenObject(null,
+                    cord.set(Coordinates.X, 0).set(Coordinates.Y, 0),
+                    RenderableType.PROPS, new double[]{1.0, 1.0}, (0 % 2 == 0 ? "textures/test.png" : "textures/testx2.png"));
+            renderables.add(object);
+//            for(int i = -6; i <= 6; i++){
+//                for(int j = -6; j <= 6; j++){
+//                    Coordinates cord = new Coordinates(2);
+//                    ScreenObject object = new ScreenObject(null,
+//                            cord.set(Coordinates.X, i).set(Coordinates.Y, j),
+//                            RenderableType.PROPS, new double[]{1.0, 1.0}, (i % 2 == 0 ? "textures/test.png" : "textures/testx2.png"));
+//                    renderables.add(object);
+//                }
+//            }
         }
 
         for(Renderable current : renderables){
@@ -84,6 +101,12 @@ public class Renderer2D implements Renderer {
             //Активация текстуры
             //активация шейдерной программы
             glUseProgram(shaderProgram);
+            // Передача матрицы проекции
+            int projLoc = glGetUniformLocation(shaderProgram, "u_Projection");
+            if (projLoc != -1) {
+                projectionMatrix.get(matrixBuffer); // Записываем матрицу в буфер
+                glUniformMatrix4fv(projLoc, false, matrixBuffer);
+            }
 
 
             glActiveTexture(GL_TEXTURE0); //текстурный юнит (канал)
