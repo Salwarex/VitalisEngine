@@ -17,10 +17,10 @@ public class RenderBuffers {
         double scaler = TileCoordinates.getScaler();
 
         float[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 0,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 0,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 1,
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 1
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 0f,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 0f,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 1f,
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 1f
         };
         int[] indices = { //массив, определяющий, в каком порядке создаются треугольники
                 0, 1, 2,
@@ -62,10 +62,10 @@ public class RenderBuffers {
         double scaler = TileCoordinates.getScaler();
 
         float[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 0,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 0,
-                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1, 1,
-                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0, 1
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 0f,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2), (float) (-scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 0f,
+                (float) (scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 1f, 1f,
+                (float) (-scaler * size[0] + coordinates.get(X)*scaler*2),  (float) (scaler * size[1] + coordinates.get(Y)*scaler*2), 0f, 1f
         };
 
         // Обновляем данные в существующем VBO
