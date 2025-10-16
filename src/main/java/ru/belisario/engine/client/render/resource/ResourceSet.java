@@ -1,6 +1,7 @@
 package ru.belisario.engine.client.render.resource;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class ResourceSet {
     private final int[] textures;
@@ -11,15 +12,20 @@ public class ResourceSet {
     private String currentAnimation = null;
     private final Map<String, String> animations;
 
-    public ResourceSet(int[] textureIds, Map<String, String> animations){
+    //other arguments
+    private final Map<String, String> arguments;
+
+    public ResourceSet(int[] textureIds, Map<String, String> animations, Map<String, String> arguments){
         this.textures = new int[Math.min(textureIds.length, 36)];
         this.animations = animations;
+        this.arguments = arguments;
         System.arraycopy(textureIds, 0, textures, 0, textures.length);
     }
 
     public ResourceSet(int textureId){
         textures = new int[1];
         animations = null;
+        arguments = null;
         textures[0] = textureId;
     }
 
@@ -64,8 +70,15 @@ public class ResourceSet {
     }
 
     public void setAnimation(String name){
+        if(animations == null) return;
         if(animations.containsKey(name))
             currentAnimation = animations.get(name);
         else throw new RuntimeException("Анимация %s не найдена!".formatted(name));
+    }
+
+    public Optional<String> getArgument(String key){
+        if(arguments == null) return Optional.empty();
+        if(!arguments.containsKey(key)) return Optional.empty();
+        return Optional.of(arguments.get(key));
     }
 }

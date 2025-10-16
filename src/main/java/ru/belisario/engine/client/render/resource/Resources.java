@@ -89,10 +89,10 @@ public class Resources {
         return textureId; //возвращение texture id из OpenGL.
     }
 
-    public static Optional<ResourceSet> getViewSet(String pathRoot){ //textures/entity/player/jacob
+    public static Optional<ResourceSet> getResourceSet(String pathRoot){ //textures/entity/player/jacob
         Path filePath;
         try{
-            filePath = getResourcePath(pathRoot + "/view-set.bl");
+            filePath = getResourcePath(pathRoot + "/resource-set.br");
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -109,6 +109,7 @@ public class Resources {
         int currentTextures = 0;
         Map<String, ResourceLoadSet> textures = new HashMap<>();
         Map<String, String> animations = new HashMap<>();
+        Map<String, String> arguments = new HashMap<>();
 
         for(String fLine : fileData){
             String trimmedLine = fLine.trim();
@@ -116,7 +117,7 @@ public class Resources {
                 continue;
             }
 
-            String[] args = fLine.split(" ");
+            String[] args = fLine.split(" #")[0].split(" ");
             if(args.length == 0) continue;
 
             String command = args[0];
@@ -127,7 +128,10 @@ public class Resources {
 
             String name = args[1];
 
-            if(command.equalsIgnoreCase("load")){
+            if(command.equalsIgnoreCase("version")){
+                String version = "%s.%s".formatted(args[1], args[2]);
+            }
+            else if(command.equalsIgnoreCase("load")){
                 int texture;
                 String dir = pathRoot + "/" + args[2];
                 try{
@@ -155,6 +159,10 @@ public class Resources {
                 }
 
                 animations.put(name, animationBuilder.toString());
+            } else if (command.equalsIgnoreCase("set")) {
+                String value = args[2];
+
+                arguments.put(name, value);
             }
         }
 
@@ -165,7 +173,7 @@ public class Resources {
            textureIds[i] = tlsS[i].glId();
        }
 
-       return Optional.of(new ResourceSet(textureIds, animations));
+       return Optional.of(new ResourceSet(textureIds, animations, arguments));
     }
 
     private static Path getResourcePath(String resourceName) throws Exception {

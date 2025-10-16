@@ -30,7 +30,7 @@ public class ScreenObject implements Renderable, Comparable<ScreenObject> {
         this.renderBuffers = RenderBuffers.createBuffers(centreScreenPos, size);
         try {
             this.resourceSet =
-                    Resources.getViewSet(textureFolder)
+                    Resources.getResourceSet(textureFolder)
                     .orElse(
                     new ResourceSet(
                             Resources.loadResourceId("textures/entity/player/template/idle/down1.png")

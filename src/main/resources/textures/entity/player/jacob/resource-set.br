@@ -1,0 +1,34 @@
+version 0 1 #Belisario Resources
+
+#resource-set.br отвечает за загрузку необходимых ресурсов в игру
+#load <имя> <путь> - загрузить в память
+#animation <имя> <порядок анимации> - создать анимацию
+#set <имя> <значение> - установить значение аргумента
+
+#Максимум 36 загрузок!
+load i_down1 idle/down1.png #Стояние к камере
+load i_down2 idle/down2.png #Стояние к камере
+load i_side1 idle/side1.png #Стояние в бок
+load i_side2 idle/side2.png #Стояние в бок
+load i_up1 idle/up1.png #Стояние от камеры
+load i_up2 idle/up2.png #Стояние от камеры
+load w_down1 walk/down1.png #Ходьба к камере
+load w_down2 walk/down2.png #Ходьба к камере
+load w_side1 walk/side1.png #Ходьба в бок
+load w_side2 walk/side2.png #Ходьба в бок
+load w_up1 walk/up1.png #Ходьба от камеры
+load w_up2 walk/up2.png #Ходьба от камеры
+
+animation idle_down i_down1 i_down2 #Анимация стояния к камере
+animation idle_side i_side1 i_side2 #Анимация стояния в бок
+animation idle_up i_up1 i_up2 #Анимация стояния от камеры
+animation walk_down w_down1 w_down2 #Анимация ходьбы к камере
+animation walk_side w_side1 w_side2 #Анимация ходьбы в бок
+animation walk_up w_up1 w_up2 #Анимация ходьбы от камеры
+
+set default idle_down
+set frameRate 30
+set sizeX 1
+set sizeY 1
+set offsetX 0
+set offsetY 0
