@@ -1,7 +1,7 @@
-package ru.vitalis.engine.client.render.r2d.buffers;
+package ru.belisario.engine.client.render.r2d.buffers;
 
-import ru.vitalis.engine.client.render.ClientCords;
-import ru.vitalis.engine.core.Coordinates;
+import ru.belisario.engine.core.Coordinates;
+import ru.belisario.engine.client.render.ClientCords;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
@@ -9,8 +9,6 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
-
-import static ru.vitalis.engine.core.Coordinates.*;
 
 public class RenderBuffers {
     public static RenderBuffer createBuffers(Coordinates coordinates, double[] size){
@@ -50,8 +48,8 @@ public class RenderBuffers {
     private static int vbo(RenderBuffer buffer, Coordinates coordinates, double[] size){
         double scaler = ClientCords.getScaler();
         Coordinates normCords = ClientCords.getScreenView(coordinates);
-        double x = normCords.get(X);
-        double y = normCords.get(Y);
+        double x = normCords.get(Coordinates.X);
+        double y = normCords.get(Coordinates.Y);
 
         float[] vertices = { //надо вынести в отдельный метод для VBO и сделать координаты скелируемыми через TileCoordinates
                 (float) (-scaler * size[0] + x), (float) (-scaler * size[1] + y), 0f, 0f,

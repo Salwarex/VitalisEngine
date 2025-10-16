@@ -1,10 +1,12 @@
-package ru.vitalis.engine.client.render.r2d;
+package ru.belisario.engine.client.render.r2d;
 
-import ru.vitalis.engine.client.render.r2d.buffers.RenderBuffer;
-import ru.vitalis.engine.core.Coordinates;
+import ru.belisario.engine.client.render.r2d.buffers.RenderBuffer;
+import ru.belisario.engine.client.render.resource.ResourceSet;
+import ru.belisario.engine.core.Coordinates;
 
 public interface Renderable {
     int getTextureId();
+    ResourceSet getResourceSet();
     RenderableType getRenderType();
     RenderBuffer getRenderBuffers();
     double[] getSize();

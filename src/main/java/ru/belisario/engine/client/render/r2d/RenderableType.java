@@ -1,4 +1,4 @@
-package ru.vitalis.engine.client.render.r2d;
+package ru.belisario.engine.client.render.r2d;
 
 public enum RenderableType {
     GRAPHICAL_INTERFACE,

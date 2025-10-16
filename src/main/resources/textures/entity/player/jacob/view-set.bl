@@ -1,0 +1,19 @@
+load i_down1 idle/down1.png #0
+load i_down2 idle/down2.png #1
+load i_side1 idle/side1.png #2
+load i_side2 idle/side2.png #3
+load i_up1 idle/up1.png #4
+load i_up2 idle/up2.png #5
+load w_down1 walk/down1.png #6
+load w_down2 walk/down2.png #7
+load w_side1 walk/side1.png #8
+load w_side2 walk/side2.png #9
+load w_up1 walk/up1.png #a
+load w_up2 walk/up2.png #b
+
+animation idle_down i_down1 i_down2 #01
+animation idle_side i_side1 i_side2 #23
+animation idle_up i_up1 i_up2 #45
+animation walk_down w_down1 w_down2 #67
+animation walk_side w_side1 w_side2 #89
+animation walk_up w_up1 w_up2 #ab

@@ -1,4 +1,4 @@
-package ru.vitalis.engine.core;
+package ru.belisario.engine.core;
 
 import java.util.Arrays;
 

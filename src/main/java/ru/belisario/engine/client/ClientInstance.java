@@ -1,5 +1,4 @@
-package ru.vitalis.engine.client;
-
+package ru.belisario.engine.client;
 
 import org.lwjgl.stb.STBImage;
 

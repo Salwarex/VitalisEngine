@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group = 'ru.waxera'
+group = 'ru.belisario'
 version = '1.0-SNAPSHOT'
 project.ext.lwjglVersion = "3.3.6"
 project.ext.jomlVersion = "1.10.8"

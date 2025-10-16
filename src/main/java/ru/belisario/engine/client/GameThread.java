@@ -1,7 +1,7 @@
-package ru.vitalis.engine.client;
+package ru.belisario.engine.client;
 
 import org.lwjgl.opengl.GL;
-import ru.vitalis.engine.client.render.Renderer;
+import ru.belisario.engine.client.render.Renderer;
 
 import java.util.concurrent.Callable;
 

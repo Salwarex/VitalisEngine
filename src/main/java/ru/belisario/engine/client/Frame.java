@@ -1,10 +1,10 @@
-package ru.vitalis.engine.client;
+package ru.belisario.engine.client;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
-import ru.vitalis.engine.client.render.Renderer;
-import ru.vitalis.engine.client.render.r2d.Renderer2D;
+import ru.belisario.engine.client.render.Renderer;
+import ru.belisario.engine.client.render.r2d.Renderer2D;
 
 import java.nio.IntBuffer;
 
@@ -40,7 +40,7 @@ public class Frame {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         //Создание окна
-        window = glfwCreateWindow(this.width, this.height, "Vitalis Project", NULL, NULL);
+        window = glfwCreateWindow(this.width, this.height, "Belisario v0.8.1 Project", NULL, NULL);
 
         if (window == NULL)
             throw new RuntimeException("Can't create window");

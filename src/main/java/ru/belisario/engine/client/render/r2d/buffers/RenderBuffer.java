@@ -1,4 +1,4 @@
-package ru.vitalis.engine.client.render.r2d.buffers;
+package ru.belisario.engine.client.render.r2d.buffers;
 
 public class RenderBuffer {
     private int vao;

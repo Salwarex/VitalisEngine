@@ -1,12 +1,12 @@
-package ru.vitalis.engine.client.render.r2d;
+package ru.belisario.engine.client.render.r2d;
 
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
-import ru.vitalis.engine.client.Frame;
-import ru.vitalis.engine.client.objects.ScreenObject;
-import ru.vitalis.engine.client.render.Renderer;
-import ru.vitalis.engine.client.render.r2d.texture.Shaders;
-import ru.vitalis.engine.core.Coordinates;
+import ru.belisario.engine.client.Frame;
+import ru.belisario.engine.client.objects.ScreenObject;
+import ru.belisario.engine.client.render.Renderer;
+import ru.belisario.engine.client.render.resource.Shaders;
+import ru.belisario.engine.core.Coordinates;
 
 import java.nio.FloatBuffer;
 import java.util.HashSet;
@@ -75,9 +75,7 @@ public class Renderer2D implements Renderer {
                     Coordinates cord = new Coordinates(2);
                     ScreenObject object = new ScreenObject(null,
                             cord.set(Coordinates.X, i).set(Coordinates.Y, j),
-                            RenderableType.PROPS, new double[]{1.0, 1.0}, (i % 2 == 0 ?
-                            "textures/entity/player/jacob/idle/down1.png"
-                            : "textures/entity/player/jacob/idle/down2.png"));
+                            RenderableType.PROPS, new double[]{1.0, 1.0}, "textures/entity/player/jacob");
                     renderables.add(object);
                 }
             }
@@ -92,7 +90,7 @@ public class Renderer2D implements Renderer {
             int shaderProgram = Shaders.getShaderProgram("shaders/vertex.glsl", "shaders/fragment.glsl");
 
             //загрузка текстуры
-            int textureId = current.getTextureId();
+            int textureId = current.getResourceSet().getCurrent();
 
             //Активация текстуры
             //активация шейдерной программы

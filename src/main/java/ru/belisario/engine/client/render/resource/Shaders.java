@@ -1,4 +1,4 @@
-package ru.vitalis.engine.client.render.r2d.texture;
+package ru.belisario.engine.client.render.resource;
 
 import static org.lwjgl.opengl.GL30.*;
 

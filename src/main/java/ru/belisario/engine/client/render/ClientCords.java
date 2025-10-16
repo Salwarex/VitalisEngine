@@ -1,10 +1,8 @@
-package ru.vitalis.engine.client.render;
+package ru.belisario.engine.client.render;
 
-import ru.vitalis.engine.client.Frame;
-import ru.vitalis.engine.client.render.r2d.Renderer2D;
-import ru.vitalis.engine.core.Coordinates;
-
-import static ru.vitalis.engine.core.Coordinates.*;
+import ru.belisario.engine.client.Frame;
+import ru.belisario.engine.client.render.r2d.Renderer2D;
+import ru.belisario.engine.core.Coordinates;
 
 public class ClientCords {
     private static final double standardMultiplierSize = 0.1;
@@ -40,11 +38,11 @@ public class ClientCords {
 
     public static Coordinates getScreenView(Coordinates tileView){
         double modifier = scaler*2;
-        return new Coordinates(2).set(X, tileView.get(X)*modifier).set(Y, tileView.get(Y)*modifier);
+        return new Coordinates(2).set(Coordinates.X, tileView.get(Coordinates.X)*modifier).set(Coordinates.Y, tileView.get(Coordinates.Y)*modifier);
     }
 
     public static Coordinates getTileView(Coordinates screenView){
         double modifier = scaler*2;
-        return new Coordinates(2).set(X, screenView.get(X)/modifier).set(Y, screenView.get(Y)/modifier);
+        return new Coordinates(2).set(Coordinates.X, screenView.get(Coordinates.X)/modifier).set(Coordinates.Y, screenView.get(Coordinates.Y)/modifier);
     }
 }

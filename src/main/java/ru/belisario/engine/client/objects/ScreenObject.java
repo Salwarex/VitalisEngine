@@ -1,18 +1,17 @@
-package ru.vitalis.engine.client.objects;
+package ru.belisario.engine.client.objects;
 
 import org.jetbrains.annotations.NotNull;
-import ru.vitalis.engine.client.render.ClientCords;
-import ru.vitalis.engine.client.render.r2d.buffers.RenderBuffer;
-import ru.vitalis.engine.client.render.r2d.buffers.RenderBuffers;
-import ru.vitalis.engine.client.render.r2d.Renderable;
-import ru.vitalis.engine.client.render.r2d.RenderableType;
-import ru.vitalis.engine.client.render.r2d.texture.Textures;
-import ru.vitalis.engine.core.Coordinates;
+import ru.belisario.engine.client.render.resource.Resources;
+import ru.belisario.engine.client.render.resource.ResourceSet;
+import ru.belisario.engine.core.Coordinates;
+import ru.belisario.engine.client.render.ClientCords;
+import ru.belisario.engine.client.render.r2d.buffers.RenderBuffer;
+import ru.belisario.engine.client.render.r2d.buffers.RenderBuffers;
+import ru.belisario.engine.client.render.r2d.Renderable;
+import ru.belisario.engine.client.render.r2d.RenderableType;
 
 import java.io.IOException;
 import java.util.UUID;
-
-import static ru.vitalis.engine.core.Coordinates.*;
 
 public class ScreenObject implements Renderable, Comparable<ScreenObject> {
     protected final UUID uuid;
@@ -20,20 +19,27 @@ public class ScreenObject implements Renderable, Comparable<ScreenObject> {
     protected final double[] size; //множители размера относительно стандартных 160x160
     protected final RenderableType renderType;
     protected final RenderBuffer renderBuffers;
-    protected int textureId;
+    protected final ResourceSet resourceSet;
 
-    public ScreenObject(UUID uuid, Coordinates centreScreenPos, RenderableType renderableType, double[] sizeMultipliers, String texturePath){
+    public ScreenObject(UUID uuid, Coordinates centreScreenPos, RenderableType renderableType, double[] sizeMultipliers, String textureFolder){
         if(uuid == null) this.uuid = UUID.randomUUID();
         else this.uuid = uuid;
         this.centreScreenPos = centreScreenPos;
         this.renderType = renderableType;
         this.size = sizeMultipliers;
         this.renderBuffers = RenderBuffers.createBuffers(centreScreenPos, size);
-        try{
-            this.textureId = Textures.loadTextureId(texturePath);
-        } catch (IOException e) {
-            e.printStackTrace();
+        try {
+            this.resourceSet =
+                    Resources.getViewSet(textureFolder)
+                    .orElse(
+                    new ResourceSet(
+                            Resources.loadResourceId("textures/entity/player/template/idle/down1.png")
+                    )); // без / на конце!
         }
+        catch (IOException e){
+            throw new RuntimeException("Не удалось загрузить текстуру!");
+        }
+
     }
 
     public UUID getUUID() {
@@ -56,15 +62,20 @@ public class ScreenObject implements Renderable, Comparable<ScreenObject> {
         Coordinates[] result = new Coordinates[4];
         for(int i = 0; i < 4 ; i++){
             result[i] = new Coordinates(2)
-                    .set(X, (i % 3 == 0 ? -1 : 1) * ClientCords.getScaler() * size[0] + centreScreenPos.get(X))
-                    .set(Y, (i <= 1 ? -1 : 1) * ClientCords.getScaler() * size[1] + centreScreenPos.get(Y));
+                    .set(Coordinates.X, (i % 3 == 0 ? -1 : 1) * ClientCords.getScaler() * size[0] + centreScreenPos.get(Coordinates.X))
+                    .set(Coordinates.Y, (i <= 1 ? -1 : 1) * ClientCords.getScaler() * size[1] + centreScreenPos.get(Coordinates.Y));
         }
         return result;
     }
 
     @Override
     public int getTextureId(){
-        return this.textureId;
+        return this.resourceSet.getCurrent();
+    }
+
+    @Override
+    public ResourceSet getResourceSet() {
+        return resourceSet;
     }
 
     @Override
