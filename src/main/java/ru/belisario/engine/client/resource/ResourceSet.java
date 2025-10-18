@@ -1,9 +1,11 @@
-package ru.belisario.engine.client.render.resource;
+package ru.belisario.engine.client.resource;
 
 import java.util.Map;
 import java.util.Optional;
 
-public class ResourceSet {
+public class ResourceSet implements Cloneable{
+    private final String key;
+
     private final int[] textures;
     private int cursor;
 
@@ -15,18 +17,24 @@ public class ResourceSet {
     //other arguments
     private final Map<String, String> arguments;
 
-    public ResourceSet(int[] textureIds, Map<String, String> animations, Map<String, String> arguments){
+    public ResourceSet(String key, int[] textureIds, Map<String, String> animations, Map<String, String> arguments){
+        this.key = key;
         this.textures = new int[Math.min(textureIds.length, 36)];
         this.animations = animations;
         this.arguments = arguments;
         System.arraycopy(textureIds, 0, textures, 0, textures.length);
     }
 
-    public ResourceSet(int textureId){
+    public ResourceSet(String key, int textureId){
+        this.key = key;
         textures = new int[1];
         animations = null;
         arguments = null;
         textures[0] = textureId;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public int getCurrent(){
@@ -80,5 +88,10 @@ public class ResourceSet {
         if(arguments == null) return Optional.empty();
         if(!arguments.containsKey(key)) return Optional.empty();
         return Optional.of(arguments.get(key));
+    }
+
+    @Override
+    protected ResourceSet clone() {
+        return new ResourceSet(key, textures, animations, arguments);
     }
 }

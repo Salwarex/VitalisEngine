@@ -1,4 +1,4 @@
-package ru.belisario.engine.client.render.resource;
+package ru.belisario.engine.client.resource;
 
 import static org.lwjgl.opengl.GL30.*;
 

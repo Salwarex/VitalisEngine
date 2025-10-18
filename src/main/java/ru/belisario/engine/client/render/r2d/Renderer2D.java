@@ -5,7 +5,8 @@ import org.lwjgl.BufferUtils;
 import ru.belisario.engine.client.Frame;
 import ru.belisario.engine.client.objects.ScreenObject;
 import ru.belisario.engine.client.render.Renderer;
-import ru.belisario.engine.client.render.resource.Shaders;
+import ru.belisario.engine.client.resource.ResourcesLoader;
+import ru.belisario.engine.client.resource.Shaders;
 import ru.belisario.engine.core.Coordinates;
 
 import java.nio.FloatBuffer;
@@ -67,15 +68,22 @@ public class Renderer2D implements Renderer {
         }
     }
 
+    boolean loaded = false;
+
     @Override
     public void draw(){
+        if(!loaded){
+            ResourcesLoader.loadResources("textures", "main");
+            loaded = true;
+        }
+
         if(renderables.isEmpty()){
             for(int i = -6; i <= 6; i++){
                 for(int j = -6; j <= 6; j++){
                     Coordinates cord = new Coordinates(2);
                     ScreenObject object = new ScreenObject(null,
                             cord.set(Coordinates.X, i).set(Coordinates.Y, j),
-                            RenderableType.PROPS, new double[]{1.0, 1.0}, "textures/entity/player/jacob");
+                            RenderableType.PROPS, new double[]{1.0, 1.0}, "entity.player.jacob");
                     renderables.add(object);
                 }
             }

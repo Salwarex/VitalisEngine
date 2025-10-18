@@ -1,8 +1,8 @@
 package ru.belisario.engine.client.objects;
 
 import org.jetbrains.annotations.NotNull;
-import ru.belisario.engine.client.render.resource.Resources;
-import ru.belisario.engine.client.render.resource.ResourceSet;
+import ru.belisario.engine.client.resource.ResourcesLoader;
+import ru.belisario.engine.client.resource.ResourceSet;
 import ru.belisario.engine.core.Coordinates;
 import ru.belisario.engine.client.render.ClientCords;
 import ru.belisario.engine.client.render.r2d.buffers.RenderBuffer;
@@ -11,6 +11,7 @@ import ru.belisario.engine.client.render.r2d.Renderable;
 import ru.belisario.engine.client.render.r2d.RenderableType;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 public class ScreenObject implements Renderable, Comparable<ScreenObject> {
@@ -21,25 +22,15 @@ public class ScreenObject implements Renderable, Comparable<ScreenObject> {
     protected final RenderBuffer renderBuffers;
     protected final ResourceSet resourceSet;
 
-    public ScreenObject(UUID uuid, Coordinates centreScreenPos, RenderableType renderableType, double[] sizeMultipliers, String textureFolder){
+    public ScreenObject(UUID uuid, Coordinates centreScreenPos, RenderableType renderableType, double[] sizeMultipliers, String subject){
         if(uuid == null) this.uuid = UUID.randomUUID();
         else this.uuid = uuid;
         this.centreScreenPos = centreScreenPos;
         this.renderType = renderableType;
         this.size = sizeMultipliers;
         this.renderBuffers = RenderBuffers.createBuffers(centreScreenPos, size);
-        try {
-            this.resourceSet =
-                    Resources.getResourceSet(textureFolder)
-                    .orElse(
-                    new ResourceSet(
-                            Resources.loadResourceId("textures/entity/player/template/idle/down1.png")
-                    )); // без / на конце!
-        }
-        catch (IOException e){
-            throw new RuntimeException("Не удалось загрузить текстуру!");
-        }
-
+        this.resourceSet = ResourcesLoader.getResourceSet("textures." + subject)
+                .orElse(ResourcesLoader.getResourceSet("template").get()).get(0); // без / на конце!
     }
 
     public UUID getUUID() {

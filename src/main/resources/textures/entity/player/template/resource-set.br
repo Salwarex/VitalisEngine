@@ -1,5 +1,7 @@
 version 0 2 #Belisario Resources
 
+name template
+
 #resource-set.br отвечает за загрузку необходимых ресурсов в игру
 #load <имя> <путь> - загрузить в память
 #animation <имя> <порядок анимации> - создать анимацию

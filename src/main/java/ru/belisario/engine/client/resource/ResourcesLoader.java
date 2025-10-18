@@ -1,4 +1,4 @@
-package ru.belisario.engine.client.render.resource;
+package ru.belisario.engine.client.resource;
 
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
@@ -15,12 +15,15 @@ import java.util.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class Resources {
-    public static int loadResourceId(String resourcePath) throws IOException {
+public class ResourcesLoader {
+    private static final ResourcePool pool = new ResourcePool();
+    private static String BRVersion = null;
+
+    public static int loadTextureGl(String resourcePath) throws IOException {
         int width, height, channels;
         ByteBuffer imageBuffer;
 
-        try(InputStream is = Resources.class.getClassLoader().getResourceAsStream(resourcePath)){
+        try(InputStream is = ResourcesLoader.class.getClassLoader().getResourceAsStream(resourcePath)){
             if(is == null) throw new IOException("File is not exists: " + resourcePath);
 
             byte[] bytes = is.readAllBytes(); //читаем байты из потока
@@ -89,15 +92,72 @@ public class Resources {
         return textureId; //возвращение texture id из OpenGL.
     }
 
-    public static Optional<ResourceSet> getResourceSet(String pathRoot){ //textures/entity/player/jacob
+    public static ResourcePool getPool(){
+        return pool;
+    }
+
+    public static void loadResources(String pathRoot, String fileName){
+        List<ResourceSet> list = getResourceSet(pathRoot, fileName).get();
+        for(ResourceSet set : list){
+            pool.add(set.getKey(), set);
+        }
+    }
+
+    public static Optional<List<ResourceSet>> getResourceSet(String key){
+        if(pool.contains(key)) return Optional.of(List.of(pool.get(key).get()));
+        String path = key.replace(".", "\\");
+
+        return getResourceSet(path, null);
+    }
+
+    public static Optional<List<ResourceSet>> getResourceSet(String pathRoot, String fileName){ //textures/entity/player/jacob
+        List<ResourceSet> resources = new ArrayList<>();
+        RawResourceSet raw = BRHandle(pathRoot, fileName);
+        resourcesTreeRecursiveLoad(raw, resources);
+        return Optional.of(resources);
+    }
+
+    private static void resourcesTreeRecursiveLoad(RawResourceSet raw, List<ResourceSet> list){
+        if(!raw.animations().isEmpty()
+                || !raw.arguments().isEmpty()
+                || !raw.textures().isEmpty()) {
+            ResourceSet resource = handleRaw(raw);
+            list.add(resource);
+        }
+        if(!raw.includes().isEmpty()){
+            for(RawResourceSet includedRaw : raw.includes()){
+                resourcesTreeRecursiveLoad(includedRaw, list);
+            }
+        }
+    }
+
+    private static ResourceSet handleRaw(RawResourceSet raw) {
+        ResourceLoadSet[] tlsS = raw.textures().values().toArray(new ResourceLoadSet[0]);
+        Arrays.sort(tlsS, Comparator.comparingInt(ResourceLoadSet::localId));
+        int[] textureIds = new int[tlsS.length];
+        for(int i = 0; i < tlsS.length; i++){
+            textureIds[i] = tlsS[i].glId();
+        }
+
+        System.out.printf("[BELISARIO RESOURCES] Loaded resource %s%n".formatted(raw.path()));
+
+        return new ResourceSet(raw.path(), textureIds, raw.animations(), raw.arguments());
+    }
+
+    private static RawResourceSet BRHandle(String pathRoot, String fileName) {
+        System.out.printf("[BELISARIO RESOURCES] File handling: %s\\%s.br%n"
+                .formatted(pathRoot, (fileName == null ? "resource-set" : fileName)));
+
         Path filePath;
         try{
-            filePath = getResourcePath(pathRoot + "/resource-set.br");
+            filePath = getResourcePath(pathRoot + "/%s.br"
+                    .formatted(fileName == null ? "resource-set" : fileName));
         }catch (Exception e){
             throw new RuntimeException(e);
         }
 
-        if(!Files.exists(filePath) || !Files.isReadable(filePath)) return Optional.empty();
+        if(!Files.exists(filePath) || !Files.isReadable(filePath))
+            throw new RuntimeException("Файл %s не найден!".formatted(filePath));
 
         List<String> fileData;
         try{
@@ -106,59 +166,60 @@ public class Resources {
             throw new RuntimeException("Не удалось прочитать файл %s".formatted(filePath));
         }
 
-        int currentTextures = 0;
+        String key = pathRoot
+                .replace("\\", ".")
+                .replace("/", ".");
         Map<String, ResourceLoadSet> textures = new HashMap<>();
         Map<String, String> animations = new HashMap<>();
         Map<String, String> arguments = new HashMap<>();
+        List<RawResourceSet> includes = new ArrayList<>();
 
+        int currentTextures = 0;
         for(String fLine : fileData){
             String trimmedLine = fLine.trim();
             if (trimmedLine.isEmpty()) {
                 continue;
             }
-
             String[] args = fLine.split(" #")[0].split(" ");
             if(args.length == 0) continue;
 
             String command = args[0];
 
+            if(args.length < 2) {
+                throw new RuntimeException("Ошибка обработки синтаксиса файла %s".formatted(filePath));
+            }
+            String name = args[1];
+
+            if(command.equalsIgnoreCase("include")){
+                String includedPathRoot = "%s\\%s".formatted(pathRoot, name.replace(".", "\\"));
+                String includedFileName = (args.length >= 3 ? args[2] : null);
+                includes.add(BRHandle(includedPathRoot, includedFileName));
+
+                continue;
+            } else if (command.equalsIgnoreCase("name")) {
+                key = name;
+                continue;
+            }
+
             if(args.length < 3) {
                 throw new RuntimeException("Ошибка обработки синтаксиса файла %s".formatted(filePath));
             }
 
-            String name = args[1];
-
             if(command.equalsIgnoreCase("version")){
                 String version = "%s.%s".formatted(args[1], args[2]);
+                if(BRVersion == null) BRVersion = version;
             }
             else if(command.equalsIgnoreCase("load")){
-                int texture;
-                String dir = pathRoot + "/" + args[2];
-                try{
-                    texture = loadResourceId(dir);
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при загрузке файла %s".formatted(dir));
-                }
+                int texture = BRLoad(pathRoot+ "\\" + args[2]);
                 if(currentTextures >= 36){
-                    throw new RuntimeException("Невозможно добавить больше 36 текстур в один TextureSet!");
+                    throw new RuntimeException("Невозможно добавить больше 36 текстур в один ResourceSet!");
                 }
                 textures.put(name, new ResourceLoadSet(currentTextures, texture));
                 currentTextures++;
             } else if (command.equalsIgnoreCase("animation")) {
-                StringBuilder animationBuilder = new StringBuilder();
+                String animation = BRAnimation(Arrays.copyOfRange(args, 2, args.length), textures);
 
-                for(int i = 2; i < args.length; i++){
-                    String key = args[i];
-                    if(key.charAt(0) == '#') continue;
-
-                    if(!textures.containsKey(key)) {
-                        throw new RuntimeException("Текстура с именем %s не загружена!");
-                    }
-                    ResourceLoadSet tls = textures.get(key);
-                    animationBuilder.append(Character.forDigit(tls.localId(), 36));
-                }
-
-                animations.put(name, animationBuilder.toString());
+                animations.put(name, animation);
             } else if (command.equalsIgnoreCase("set")) {
                 String value = args[2];
 
@@ -166,18 +227,36 @@ public class Resources {
             }
         }
 
-       ResourceLoadSet[] tlsS = textures.values().toArray(new ResourceLoadSet[0]);
-       Arrays.sort(tlsS, Comparator.comparingInt(ResourceLoadSet::localId));
-       int[] textureIds = new int[tlsS.length];
-       for(int i = 0; i < tlsS.length; i++){
-           textureIds[i] = tlsS[i].glId();
-       }
+        return new RawResourceSet(key, textures, animations, arguments, includes);
+    }
 
-       return Optional.of(new ResourceSet(textureIds, animations, arguments));
+    private static String BRAnimation(String[] args, Map<String, ResourceLoadSet> textures) {
+        StringBuilder animationBuilder = new StringBuilder();
+
+        for (String key : args) {
+            if (key.charAt(0) == '#') continue;
+
+            if (!textures.containsKey(key)) {
+                throw new RuntimeException("Текстура с именем %s не загружена!");
+            }
+            ResourceLoadSet tls = textures.get(key);
+            animationBuilder.append(Character.forDigit(tls.localId(), 36));
+        }
+        return animationBuilder.toString();
+    }
+
+    private static int BRLoad(String path) {
+        int texture;
+        try{
+            texture = loadTextureGl(path);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при загрузке файла %s: %s".formatted(path, e.toString()));
+        }
+        return texture;
     }
 
     private static Path getResourcePath(String resourceName) throws Exception {
-        URL resource = Resources.class.getResource("/" + resourceName);
+        URL resource = ResourcesLoader.class.getResource("/" + resourceName);
         if (resource == null) {
             throw new IllegalArgumentException("Ресурс не найден: " + resourceName);
         }
@@ -193,6 +272,39 @@ public class Resources {
         } else {
             return Paths.get(uri);
         }
+    }
+}
+
+record RawResourceSet(
+        String path,
+        Map<String, ResourceLoadSet> textures,
+        Map<String, String> animations,
+        Map<String, String> arguments,
+        List<RawResourceSet> includes
+){
+    @Override
+    public String path() {
+        return path;
+    }
+
+    @Override
+    public Map<String, ResourceLoadSet> textures() {
+        return textures;
+    }
+
+    @Override
+    public Map<String, String> animations() {
+        return animations;
+    }
+
+    @Override
+    public Map<String, String> arguments() {
+        return arguments;
+    }
+
+    @Override
+    public List<RawResourceSet> includes() {
+        return includes;
     }
 }
 
