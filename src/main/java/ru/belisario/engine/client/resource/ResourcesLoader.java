@@ -2,6 +2,11 @@ package ru.belisario.engine.client.resource;
 
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
+import ru.belisario.engine.client.ClientInstance;
+import ru.belisario.engine.client.Frame;
+import ru.belisario.engine.client.GameThread;
+import ru.belisario.engine.client.render.ClientCords;
+import ru.belisario.engine.client.resource.ui.UIType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -186,7 +191,7 @@ public class ResourcesLoader {
             String command = args[0];
 
             if(args.length < 2) {
-                throw new RuntimeException("Ошибка обработки синтаксиса файла %s".formatted(filePath));
+                throw new RuntimeException("Ошибка обработки синтаксиса файла %s (Недостаточно аргументов!)".formatted(filePath));
             }
             String name = args[1];
 
@@ -202,7 +207,7 @@ public class ResourcesLoader {
             }
 
             if(args.length < 3) {
-                throw new RuntimeException("Ошибка обработки синтаксиса файла %s".formatted(filePath));
+                throw new RuntimeException("Ошибка обработки синтаксиса файла %s (Недостаточно аргументов!)".formatted(filePath));
             }
 
             if(command.equalsIgnoreCase("version")){
@@ -225,9 +230,226 @@ public class ResourcesLoader {
 
                 arguments.put(name, value);
             }
+
+            if(args.length < 4) {
+                throw new RuntimeException("Ошибка обработки синтаксиса файла %s (Недостаточно аргументов!)".formatted(filePath));
+            }
+
+            if(command.equalsIgnoreCase("ui")){
+                String subcommand = args[1];
+                String type = args[2];
+                String[] params = Arrays.copyOfRange(args, 3, args.length);
+
+
+                /*
+                 * ui set panel default=i:1 click=a:default - задание стандартных параметров
+                 * ui child text template={ui-text.br}:"Старт" - создание дочернего элемента
+                 * ui xyz centrePos x=centre-0.1x+0.1y y=centre - задача параметров положения (корды)
+                 * ui xyz size xy=centre-0.1x+0.1y - задача параметров положения (размер
+                 */
+
+                switch(subcommand){
+                    case "set": {
+                        UIType uiType = UIType.valueOf(type);
+                        switch(uiType){
+                            case PANEL -> {
+                                paramHandler(params);
+                                break;
+                            }
+                            default -> {
+                                break;
+                            }
+                        }
+
+
+                        break;
+                    }
+                    case "child": {
+                        switch (type){
+                            case "": {
+                                break;
+                            }
+                            default: break;
+                        }
+                        break;
+                    }
+                    case "xyz": {
+                        switch (type){
+                            case "": {
+                                break;
+                            }
+                            default: break;
+                        }
+                        break;
+                    }
+                    default: break;
+                }
+            }
         }
 
         return new RawResourceSet(key, textures, animations, arguments, includes);
+    }
+
+
+    //переделать с токенами?
+    public static double calclulateExpression(String str) throws IllegalArgumentException{
+        List<String> elements = new ArrayList<>(); // 1, 10xy, 13, 1
+        List<MathOperation> operations = new ArrayList<>(); // - (0, 1), / (1, 2), + (2, 3)
+        StringBuilder currentElementBuilder = new StringBuilder();
+
+        double calculated = 0;
+
+        for(int i = 0; i < str.length(); i++){
+            char c = str.charAt(i);
+            MathOperation operation = MathOperation.getByOperation(c);
+            if(operation != MathOperation.UNKNOWN || i == str.length()-1){
+                elements.add(currentElementBuilder.toString());
+                currentElementBuilder = new StringBuilder();
+
+                if(operation != MathOperation.UNKNOWN) operations.add(operation);
+                continue;
+            }
+            currentElementBuilder.append(c);
+        }
+
+        System.out.printf("sizeOp = %d, sizeEl = %d%n", operations.size(), elements.size());
+
+        //multiplying and division
+        List<String> aftermathElements = new ArrayList<>();
+        List<MathOperation> aftermathOperations = new ArrayList<>();
+        MathOperation lastOperation = null;
+
+
+        //10x * 10y * 12z + 10x - 10
+        // [] AME
+        // [] AMO
+        //   \/
+        // [10x*10y] AME
+        // [] AMO
+        //(10x*10y) * 12z + 10x - 10
+        //         \/
+        // [10x*10y*12z] AME
+        // [] AMO
+        // (10x*10y*12z) + 10x - 10
+        // [10x*10y*12z, 10x] AME
+        // [PLUS]
+
+
+        for(int i = 0; i < operations.size(); i++){
+            MathOperation operation = operations.get(i);
+
+            if(operation == MathOperation.PLUS
+                    || operation == MathOperation.MINUS){
+                aftermathElements.add(elements.get(i));
+                aftermathOperations.add(operation);
+                lastOperation = operation;
+
+                if(i == operations.size() - 1) aftermathElements.add(elements.get(i + 1));
+                continue;
+            }
+
+            String leftStr = (aftermathElements.isEmpty() ? elements.get(i) : aftermathElements.getLast());
+            String rightStr = elements.get(i+1);
+
+            double result = operation.expression.apply(
+                    representAsDouble(leftStr),
+                    representAsDouble(rightStr)
+            );
+
+            if(lastOperation == MathOperation.PLUS
+                    || lastOperation == MathOperation.MINUS){
+                aftermathElements.set(aftermathElements.size() - 1, result + ""); //уничтожить этот кошмар в будущем!
+            }
+            else{
+                aftermathElements.add(result + ""); //и этот тоже!!!!
+            }
+
+            lastOperation = operation;
+        }
+
+        double result = Double.POSITIVE_INFINITY;
+        for(int i = 0; i < aftermathOperations.size(); i++){
+            if(result == Double.POSITIVE_INFINITY){
+                aftermathElements.getFirst();
+            }
+
+            MathOperation operation = aftermathOperations.get(i);
+            System.out.printf("sizeOp = %d, sizeEl = %d%n", aftermathOperations.size(), aftermathElements.size());
+            result = operation.expression.apply(result, representAsDouble(aftermathElements.get(i+1)));
+        }
+        return result;
+    }
+
+    private static double representAsDouble(String statement){
+        Frame frame = ClientInstance.getThread().getFrame();
+
+        if(statement.equalsIgnoreCase("centreX")
+                || statement.equalsIgnoreCase("centreY")){
+            return 0;
+        }
+        else if(statement.equalsIgnoreCase("screenX")) return frame.getWidth();
+        else if(statement.equalsIgnoreCase("screenY")) return frame.getHeight();
+        else if(statement.equalsIgnoreCase("screen")) return Math.min(frame.getWidth(), frame.getHeight());
+        else if(statement.equalsIgnoreCase("tileX")) return ClientCords.getUnitSizeX();
+        else if(statement.equalsIgnoreCase("tileY")) return ClientCords.getUnitSizeY();
+
+        try{
+            return Double.parseDouble(statement);
+        }catch (IllegalArgumentException e){
+            throw new RuntimeException("Ошибка вычислений! %s".formatted(e));
+        }
+    }
+
+    private static List<Param> paramHandler(String[] params) {
+        List<Param> result = new ArrayList<>();
+
+        for(String paramStr : params){
+            ProvidedParamsObjectType objectType = null;
+            String objectName = null;
+            String origin = null;
+
+            String[] paramArr = paramStr.split("=");
+            String mod = paramArr[0];
+
+            if (mod.equalsIgnoreCase("x")
+                    || mod.equalsIgnoreCase("y")
+                    || mod.equalsIgnoreCase("xy")) {
+
+            }
+            else if(mod.equalsIgnoreCase("default")
+                    || mod.equalsIgnoreCase("click")
+                    || mod.equalsIgnoreCase("hover")
+                    || mod.equalsIgnoreCase("template")
+            ){
+                String[] objAttributes = paramArr[1].split(":");
+                String objectTypeChar = objAttributes[0];
+                if(objectTypeChar.equalsIgnoreCase("i"))
+                    objectType = ProvidedParamsObjectType.IMAGE;
+                else if(objectTypeChar.equalsIgnoreCase("a"))
+                    objectType = ProvidedParamsObjectType.ANIMATION;
+                else {
+                    if (objectTypeChar.matches(".*\\{.*\\.br}.*")) {
+                        objectType = ProvidedParamsObjectType.LINK;
+                        origin = objectTypeChar.substring(1, objectTypeChar.length() - 1);
+                    }
+                    else{
+                        objectType = ProvidedParamsObjectType.UNKNOWN;
+                    }
+                }
+
+                objectName = objAttributes[1];
+            }
+
+            Param param = new Param(
+                    objectType,
+                    objectName,
+                    origin
+            );
+
+            result.add(param);
+        }
+
+        return result;
     }
 
     private static String BRAnimation(String[] args, Map<String, ResourceLoadSet> textures) {
@@ -275,6 +497,27 @@ public class ResourcesLoader {
     }
 }
 
+record Param(
+        ProvidedParamsObjectType defaultType,
+        String defaultName,
+        String origin
+){
+    @Override
+    public ProvidedParamsObjectType defaultType() {
+        return defaultType;
+    }
+
+    @Override
+    public String defaultName() {
+        return defaultName;
+    }
+
+    @Override
+    public String origin() {
+        return origin;
+    }
+}
+
 record RawResourceSet(
         String path,
         Map<String, ResourceLoadSet> textures,
@@ -308,5 +551,41 @@ record RawResourceSet(
     }
 }
 
+enum ProvidedParamsObjectType {
+    IMAGE,
+    ANIMATION,
+    LINK,
+    UNKNOWN
+}
+
 record ResourceLoadSet(int localId, int glId) {
+}
+
+@FunctionalInterface
+interface MathExpression{
+    double apply(double a, double b);
+}
+
+enum MathOperation {
+    PLUS((a, b) -> a + b),
+    MINUS((a, b) -> a - b),
+    DIVIDE((a, b) -> a / b),
+    MULTIPLY((a, b) -> a*b),
+    UNKNOWN((a, b) -> Double.NaN);
+
+    MathExpression expression;
+
+    MathOperation(MathExpression expression){
+        this.expression = expression;
+    }
+
+    static MathOperation getByOperation(char operationChar){
+        return switch(operationChar){
+            case '+' -> PLUS;
+            case '-' -> MINUS;
+            case '/' -> DIVIDE;
+            case '*' -> MULTIPLY;
+            default -> UNKNOWN;
+        };
+    }
 }

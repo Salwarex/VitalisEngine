@@ -32,7 +32,10 @@ public class ClientCords {
         return scaler;
     }
 
-    public static int getUnitSize() {
+    public static int getUnitSizeX() {
+        return (int) Math.round(lastMinSide * scaler);
+    }
+    public static int getUnitSizeY() {
         return (int) Math.round(lastMinSide * scaler);
     }
 
