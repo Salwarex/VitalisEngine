@@ -19,7 +19,7 @@ load w_down2 walk\down2.png #Ходьба к камере
 load w_side1 walk\side1.png #Ходьба в бок
 load w_side2 walk\side2.png #Ходьба в бок
 load w_up1 walk\up1.png #Ходьба от камеры
-load w_up2 walk\up2.png #Ходьба от камеры
+load w_up2 walk\up2.png #Ходьба от камерыы
 
 animation idle_down i_down1 i_down2 #Анимация стояния к камере
 animation idle_side i_side1 i_side2 #Анимация стояния в бок
